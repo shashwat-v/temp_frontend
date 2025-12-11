@@ -1,0 +1,176 @@
+/* Import Tokyo Night Theme */
+@import './tokyo-night-theme.css';
+
+/* Import Modern Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Apply Tokyo Night Theme Globally */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, var(--tokyo-bg) 0%, var(--tokyo-bg-dark) 100%);
+  color: var(--tokyo-fg);
+}
+
+/* Page Container with Transitions */
+.page-container,
+.map-view,
+.admin-dashboard,
+.analytics-page,
+.community-page,
+.profile-page {
+  animation: fadeIn 0.3s ease-out;
+  min-height: 100vh;
+}
+
+/* Map Specific Styles (kept from original) */
+.map-view {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-container {
+  position: fixed;
+  top: 60px;
+  left: 320px;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  cursor: grab;
+}
+
+.leaflet-container.creating-issue {
+  cursor: crosshair !important;
+}
+
+.leaflet-container:active {
+  cursor: grabbing;
+}
+
+/* Leaflet Popup Tokyo Night Styling */
+.leaflet-popup-content-wrapper {
+  background: var(--tokyo-bg-float);
+  border: 1px solid var(--tokyo-bg-highlight);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+  color: var(--tokyo-fg);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  min-width: 280px;
+  max-width: 340px;
+}
+
+.leaflet-popup-tip {
+  background: var(--tokyo-bg-float);
+  border: 1px solid var(--tokyo-bg-highlight);
+}
+
+.issue-popup {
+  padding: 12px;
+}
+
+.popup-title {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--tokyo-blue) 0%, var(--tokyo-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+
+.popup-description {
+  font-size: 14px;
+  color: var(--tokyo-fg-dark);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.popup-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(122, 162, 247, 0.05);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.popup-meta-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.popup-label {
+  color: var(--tokyo-fg-dark);
+}
+
+.popup-value {
+  color: var(--tokyo-fg);
+  font-weight: 600;
+}
+
+.popup-status {
+  text-transform: capitalize;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Status-specific colors */
+.popup-status.open,
+.status-open {
+  background: rgba(247, 118, 142, 0.2);
+  color: var(--tokyo-red);
+}
+
+.popup-status.in_progress,
+.status-in-progress {
+  background: rgba(122, 162, 247, 0.2);
+  color: var(--tokyo-blue);
+}
+
+.popup-status.resolved,
+.status-resolved {
+  background: rgba(158, 206, 106, 0.2);
+  color: var(--tokyo-green);
+}
+
+.popup-status.closed,
+.status-closed {
+  background: rgba(86, 95, 137, 0.2);
+  color: var(--tokyo-fg-dark);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .map-container {
+    left: 0;
+    top: 60px;
+  }
+
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-title {
+    font-size: 16px;
+  }
+
+  .leaflet-popup-content {
+    min-width: 240px;
+  }
+}

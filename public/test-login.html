@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .test {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ccc;
+        }
+
+        .test.running {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .test.success {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .test.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .test h3 {
+            margin: 0 0 10px 0;
+        }
+
+        .test pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .credentials {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Login Debug Tool</h1>
+
+        <div class="credentials">
+            <strong>Test Credentials:</strong><br>
+            Email: test@test.com<br>
+            Password: test123
+        </div>
+
+        <div>
+            <label>Email:</label>
+            <input type="email" id="email" value="test@test.com">
+
+            <label>Password:</label>
+            <input type="password" id="password" value="test123">
+
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="testLogin()">🔐 Test Login Only</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api/v1';
+
+        function addResult(title, status, message, data = null) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+
+            let html = `<h3>${title}</h3><p>${message}</p>`;
+            if (data) {
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            div.innerHTML = html;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function test1_BackendHealth() {
+            addResult('Test 1: Backend Health Check', 'running', 'Checking if backend is running...');
+            try {
+                const response = await fetch('http://localhost:5001/health');
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('Test 1: Backend Health Check', 'success',
+                        `✅ Backend is running! Status: ${data.status}`, data);
+                    return true;
+                } else {
+                    addResult('Test 1: Backend Health Check', 'error',
+                        `❌ Backend returned error: ${response.status}`);
+                    return false;
+                }
+            } catch (error) {
+                addResult('Test 1: Backend Health Check', 'error',
+                    `❌ Cannot connect to backend: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function test2_CORS() {
+            addResult('Test 2: CORS Check', 'running', 'Checking CORS configuration...');
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    addResult('Test 2: CORS Check', 'success',
+                        '✅ CORS is properly configured!');
+                    return true;
+                } else {
+                    addResult('Test 2: CORS Check', 'error',
+                        `❌ CORS issue: ${response.status}`);
+                    return false;
+                }
+            } catch (error) {
+                addResult('Test 2: CORS Check', 'error',
+                    `❌ CORS blocked: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function test3_LoginEndpoint() {
+            addResult('Test 3: Login Endpoint', 'running', 'Testing login API...');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    addResult('Test 3: Login Endpoint', 'success',
+                        '✅ Login successful! Received tokens.', {
+                        accessToken: data.data.accessToken.substring(0, 50) + '...',
+                        user: data.data.user
+                    });
+
+                    // Store tokens
+                    localStorage.setItem('token', data.data.accessToken);
+                    localStorage.setItem('refreshToken', data.data.refreshToken);
+
+                    return true;
+                } else {
+                    addResult('Test 3: Login Endpoint', 'error',
+                        `❌ Login failed: ${data.error || data.message}`, data);
+                    return false;
+                }
+            } catch (error) {
+                addResult('Test 3: Login Endpoint', 'error',
+                    `❌ Login request failed: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function test4_TokenStorage() {
+            addResult('Test 4: Token Storage', 'running', 'Checking localStorage...');
+
+            const token = localStorage.getItem('token');
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            if (token && refreshToken) {
+                addResult('Test 4: Token Storage', 'success',
+                    '✅ Tokens stored successfully!', {
+                    tokenLength: token.length,
+                    refreshTokenLength: refreshToken.length
+                });
+                return true;
+            } else {
+                addResult('Test 4: Token Storage', 'error',
+                    '❌ Tokens not found in localStorage');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+
+            const test1 = await test1_BackendHealth();
+            if (!test1) {
+                addResult('Summary', 'error',
+                    '❌ Backend is not running! Start it with: cd backend && npm run dev');
+                return;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const test2 = await test2_CORS();
+            if (!test2) {
+                addResult('Summary', 'error',
+                    '❌ CORS is blocking requests. Check backend CORS configuration.');
+                return;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const test3 = await test3_LoginEndpoint();
+            if (!test3) {
+                addResult('Summary', 'error',
+                    '❌ Login failed. Check credentials or backend logs.');
+                return;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const test4 = await test4_TokenStorage();
+
+            if (test1 && test2 && test3 && test4) {
+                addResult('Summary', 'success',
+                    '🎉 ALL TESTS PASSED! Login is working correctly. You can now go to localhost:3000 and you should be logged in!');
+            }
+        }
+
+        async function testLogin() {
+            clearResults();
+            await test3_LoginEndpoint();
+            await test4_TokenStorage();
+        }
+
+        // Auto-run tests on page load
+        setTimeout(runAllTests, 500);
+    </script>
+</body>
+
+</html>
